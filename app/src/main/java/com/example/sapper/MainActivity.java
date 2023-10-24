@@ -10,15 +10,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import java.net.CookieHandler;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-
+  Random random = new Random();
   Button[][] cells;
-  final int MINESCONST = 3;
-
-  int minesCurrent = 3;
+  char[][] cellsValue;
+  int flagsCurrent = 3;
+  int cntOfDefused = 0;
   TextView mines;
+  final int MINESCONST = 3;
   final int WIDTH = 5;
   final int HEIGHT = 5;
 
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     mines = findViewById(R.id.mines);
-    mines.setText("" + minesCurrent + " / " + MINESCONST);
+    mines.setText("" + flagsCurrent + " / " + MINESCONST);
     generate();
   }
 
@@ -37,36 +38,78 @@ public class MainActivity extends AppCompatActivity {
     layout.setColumnCount(WIDTH);
 
     cells = new Button[HEIGHT][WIDTH];
-    LayoutInflater inflater =
-        (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+    cellsValue = new char[HEIGHT][WIDTH];
 
     for (int i = 0; i < HEIGHT; i++) {
       for (int j = 0; j < WIDTH; j++) {
+        cellsValue[i][j] = '0';
+      }
+    }
+
+    LayoutInflater inflater =
+        (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+    for (int i = 0; i < MINESCONST; i++) {
+      cellsValue[random.nextInt(HEIGHT)][random.nextInt(WIDTH)] = '*';
+    }
+    for (int i = 0; i < HEIGHT; i++) {
+      for (int j = 0; j < WIDTH; j++) {
         cells[i][j] = (Button) inflater.inflate(R.layout.cell, layout, false);
+        if (cellsValue[i][j] == '*') {
+          if (i > 0 && cellsValue[i - 1][j] != '*') {
+            cellsValue[i - 1][j] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j]) + 1));
+          }
+          if (j > 0 && cellsValue[i][j - 1] != '*') {
+            cellsValue[i][j - 1] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i][j - 1]) + 1));
+          }
+          if (j != WIDTH - 1 && cellsValue[i][j + 1] != '*') {
+            cellsValue[i][j + 1] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i][j + 1]) + 1));
+          }
+          if (i != WIDTH - 1 && cellsValue[i + 1][j] != '*') {
+            cellsValue[i + 1][j] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
+          }
+        }
       }
     }
 
     for (int i = 0; i < HEIGHT; i++) {
       for (int j = 0; j < WIDTH; j++) {
-        cells[i][j].setText("" + (j + HEIGHT * i + 1));
+        int finalI = i;
+        int finalJ = j;
+
+        // cells[i][j].setText("" + (j + HEIGHT * i + 1));
+        cells[i][j].setText("" + cellsValue[i][j]);
         cells[i][j].setTag("" + (j + HEIGHT * i));
         cells[i][j].setOnClickListener(
             new View.OnClickListener() {
               @Override
               public void onClick(View v) {
-                v.setBackgroundColor(Color.RED);
+                if (cellsValue[finalI][finalJ] == '*') {
+                  Toast.makeText(getApplicationContext(), "LOSE(((", Toast.LENGTH_LONG).show();
+                  Runtime.getRuntime().exit(0);
+                }
+
+                v.setBackgroundColor(Color.GRAY);
               }
             });
         cells[i][j].setOnLongClickListener(
             new OnLongClickListener() {
               @Override
               public boolean onLongClick(View v) {
-                v.setBackgroundColor(Color.BLUE);
-                --minesCurrent;
-                mines.setText("" + minesCurrent + " / " + MINESCONST);
-                if (minesCurrent == 0) {
-                  Toast.makeText(getApplicationContext(), "WIN!!11!", Toast.LENGTH_LONG).show();
-                  Runtime.getRuntime().exit(0);
+                if (flagsCurrent > 0) {
+                  v.setBackgroundColor(Color.BLUE);
+                  --flagsCurrent;
+                  mines.setText("" + flagsCurrent + " / " + MINESCONST);
+                  if (cellsValue[finalI][finalJ] == '*') {
+                    cntOfDefused++;
+                  }
+                  if (cntOfDefused == MINESCONST) {
+                    Toast.makeText(getApplicationContext(), "WIN!!11!", Toast.LENGTH_LONG).show();
+                    Runtime.getRuntime().exit(0);
+                  }
                 }
                 return true;
               }
