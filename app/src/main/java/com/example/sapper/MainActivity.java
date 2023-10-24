@@ -18,10 +18,10 @@ public class MainActivity extends AppCompatActivity {
   Random random = new Random();
   Button[][] cells;
   char[][] cellsValue;
-  int flagsCurrent = 3;
+  final int MINESCONST = 5;
+  int flagsCurrent = MINESCONST;
   int cntOfDefused = 0;
   TextView mines;
-  final int MINESCONST = 5;
   final int WIDTH = 10;
   final int HEIGHT = 10;
 
