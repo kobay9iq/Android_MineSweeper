@@ -3,8 +3,10 @@ package com.example.sapper;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,9 +21,9 @@ public class MainActivity extends AppCompatActivity {
   int flagsCurrent = 3;
   int cntOfDefused = 0;
   TextView mines;
-  final int MINESCONST = 3;
-  final int WIDTH = 5;
-  final int HEIGHT = 5;
+  final int MINESCONST = 5;
+  final int WIDTH = 10;
+  final int HEIGHT = 10;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,24 @@ public class MainActivity extends AppCompatActivity {
             cellsValue[i + 1][j] =
                 (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
           }
+          //
+          if (i > 0 && j > 0 && cellsValue[i - 1][j - 1] != '*') {
+            cellsValue[i - 1][j - 1] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j - 1]) + 1));
+          }
+          if (i != WIDTH - 1 && j > 0 && cellsValue[i + 1][j - 1] != '*') {
+            cellsValue[i + 1][j - 1] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j - 1]) + 1));
+          }
+          if (i > 0 && j != WIDTH - 1 && cellsValue[i - 1][j + 1] != '*') {
+            cellsValue[i - 1][j + 1] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j + 1]) + 1));
+          }
+          if (i != WIDTH - 1 && j != WIDTH - 1 && cellsValue[i + 1][j + 1] != '*') {
+            cellsValue[i + 1][j + 1] =
+                (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j + 1]) + 1));
+          }
+
         }
       }
     }
@@ -81,7 +101,9 @@ public class MainActivity extends AppCompatActivity {
         int finalJ = j;
 
         // cells[i][j].setText("" + (j + HEIGHT * i + 1));
-        cells[i][j].setText("" + cellsValue[i][j]);
+        // cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
+
+
         cells[i][j].setTag("" + (j + HEIGHT * i));
         cells[i][j].setOnClickListener(
             new View.OnClickListener() {
@@ -91,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                   Toast.makeText(getApplicationContext(), "LOSE(((", Toast.LENGTH_LONG).show();
                   Runtime.getRuntime().exit(0);
                 }
-
+                cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
                 v.setBackgroundColor(Color.GRAY);
               }
             });
