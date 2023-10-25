@@ -50,48 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
     LayoutInflater inflater =
         (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+
     for (int i = 0; i < MINESCONST; i++) {
       cellsValue[random.nextInt(HEIGHT)][random.nextInt(WIDTH)] = '*';
     }
     for (int i = 0; i < HEIGHT; i++) {
       for (int j = 0; j < WIDTH; j++) {
         cells[i][j] = (Button) inflater.inflate(R.layout.cell, layout, false);
-        if (cellsValue[i][j] == '*') {
-          if (i > 0 && cellsValue[i - 1][j] != '*') {
-            cellsValue[i - 1][j] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j]) + 1));
-          }
-          if (j > 0 && cellsValue[i][j - 1] != '*') {
-            cellsValue[i][j - 1] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i][j - 1]) + 1));
-          }
-          if (j != WIDTH - 1 && cellsValue[i][j + 1] != '*') {
-            cellsValue[i][j + 1] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i][j + 1]) + 1));
-          }
-          if (i != WIDTH - 1 && cellsValue[i + 1][j] != '*') {
-            cellsValue[i + 1][j] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
-          }
-          //
-          if (i > 0 && j > 0 && cellsValue[i - 1][j - 1] != '*') {
-            cellsValue[i - 1][j - 1] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j - 1]) + 1));
-          }
-          if (i != WIDTH - 1 && j > 0 && cellsValue[i + 1][j - 1] != '*') {
-            cellsValue[i + 1][j - 1] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j - 1]) + 1));
-          }
-          if (i > 0 && j != WIDTH - 1 && cellsValue[i - 1][j + 1] != '*') {
-            cellsValue[i - 1][j + 1] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j + 1]) + 1));
-          }
-          if (i != WIDTH - 1 && j != WIDTH - 1 && cellsValue[i + 1][j + 1] != '*') {
-            cellsValue[i + 1][j + 1] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j + 1]) + 1));
-          }
-
-        }
+        fillTheCellsWithNumbers(i, j);
       }
     }
 
@@ -103,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
         // cells[i][j].setText("" + (j + HEIGHT * i + 1));
         // cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
 
-
         cells[i][j].setTag("" + (j + HEIGHT * i));
         cells[i][j].setOnClickListener(
             new View.OnClickListener() {
@@ -114,7 +79,29 @@ public class MainActivity extends AppCompatActivity {
                   Runtime.getRuntime().exit(0);
                 }
                 cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
-                v.setBackgroundColor(Color.GRAY);
+                cells[finalI][finalJ].setBackgroundColor(Color.GRAY);
+
+                if (cellsValue[finalI][finalJ] == '0') {
+                  for (int raw = 0; raw != HEIGHT; raw++) {
+                    for (int col = finalJ; col != WIDTH; col++) {
+                      if (cellsValue[raw][col] != '0') {
+                        break;
+                      }
+                      cells[raw][col].setText("" + cellsValue[raw][col]);
+                      cells[raw][col].setBackgroundColor(Color.GRAY);
+                    }
+                    for (int col = finalJ; col >= 0; col--) {
+                      if (cellsValue[raw][col] != '0') {
+
+                        break;
+                      }
+                      cells[raw][col].setText("" + cellsValue[raw][col]);
+                      cells[raw][col].setBackgroundColor(Color.GRAY);
+                    }
+                  }
+                }
+
+                // v.setBackgroundColor(Color.GRAY);
               }
             });
         cells[i][j].setOnLongClickListener(
@@ -137,6 +124,44 @@ public class MainActivity extends AppCompatActivity {
               }
             });
         layout.addView(cells[i][j]);
+      }
+    }
+  }
+
+  private void fillTheCellsWithNumbers(int i, int j) {
+    if (cellsValue[i][j] == '*') {
+      if (i > 0 && cellsValue[i - 1][j] != '*') {
+        cellsValue[i - 1][j] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j]) + 1));
+      }
+      if (j > 0 && cellsValue[i][j - 1] != '*') {
+        cellsValue[i][j - 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i][j - 1]) + 1));
+      }
+      if (j != WIDTH - 1 && cellsValue[i][j + 1] != '*') {
+        cellsValue[i][j + 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i][j + 1]) + 1));
+      }
+      if (i != WIDTH - 1 && cellsValue[i + 1][j] != '*') {
+        cellsValue[i + 1][j] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
+      }
+      //
+      if (i > 0 && j > 0 && cellsValue[i - 1][j - 1] != '*') {
+        cellsValue[i - 1][j - 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j - 1]) + 1));
+      }
+      if (i != WIDTH - 1 && j > 0 && cellsValue[i + 1][j - 1] != '*') {
+        cellsValue[i + 1][j - 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j - 1]) + 1));
+      }
+      if (i > 0 && j != WIDTH - 1 && cellsValue[i - 1][j + 1] != '*') {
+        cellsValue[i - 1][j + 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j + 1]) + 1));
+      }
+      if (i != WIDTH - 1 && j != WIDTH - 1 && cellsValue[i + 1][j + 1] != '*') {
+        cellsValue[i + 1][j + 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j + 1]) + 1));
       }
     }
   }
