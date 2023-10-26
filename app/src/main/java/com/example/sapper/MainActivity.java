@@ -1,12 +1,9 @@
 package com.example.sapper;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
   Random random = new Random();
   Button[][] cells;
   char[][] cellsValue;
-  final int MINESCONST = 5;
+  final int MINESCONST = random.nextInt(30 - 5) + 5;
   int flagsCurrent = MINESCONST;
   int cntOfDefused = 0;
   TextView mines;
@@ -30,11 +27,11 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     mines = findViewById(R.id.mines);
-    mines.setText("" + flagsCurrent + " / " + MINESCONST);
+    mines.setText("" + flagsCurrent + " / " + MINESCONST + " \uD83D\uDEA9");
     generate();
   }
 
-  public void generate() {
+  private void generate() {
     GridLayout layout = findViewById(R.id.Grid);
     layout.removeAllViews();
     layout.setColumnCount(WIDTH);
@@ -57,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     for (int i = 0; i < HEIGHT; i++) {
       for (int j = 0; j < WIDTH; j++) {
         cells[i][j] = (Button) inflater.inflate(R.layout.cell, layout, false);
+        SetCellColor(i, j, false);
         fillTheCellsWithNumbers(i, j);
       }
     }
@@ -70,81 +68,83 @@ public class MainActivity extends AppCompatActivity {
         // cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
 
         cells[i][j].setTag("" + (j + HEIGHT * i));
-        cells[i][j].setOnClickListener(
-            new View.OnClickListener() {
-              @Override
-              public void onClick(View v) {
-                if (cellsValue[finalI][finalJ] == '*') {
-                  Toast.makeText(getApplicationContext(), "LOSE(((", Toast.LENGTH_LONG).show();
-                  Runtime.getRuntime().exit(0);
-                }
-                cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
-                cells[finalI][finalJ].setBackgroundColor(Color.GRAY);
-
-                if (cellsValue[finalI][finalJ] == '0') {
-                  for (int raw = 0; raw != HEIGHT; raw++) {
-                    for (int col = finalJ; col != WIDTH; col++) {
-                      if (cellsValue[raw][col] != '0') {
-                        break;
-                      }
-                      cells[raw][col].setText("" + cellsValue[raw][col]);
-                      cells[raw][col].setBackgroundColor(Color.GRAY);
-                    }
-                    for (int col = finalJ; col >= 0; col--) {
-                      if (cellsValue[raw][col] != '0') {
-
-                        break;
-                      }
-                      cells[raw][col].setText("" + cellsValue[raw][col]);
-                      cells[raw][col].setBackgroundColor(Color.GRAY);
-                    }
-                  }
-                }
-
-                // v.setBackgroundColor(Color.GRAY);
-              }
-            });
+        cells[i][j].setOnClickListener(v -> CellOnClick(finalI, finalJ));
         cells[i][j].setOnLongClickListener(
-            new OnLongClickListener() {
-              @Override
-              public boolean onLongClick(View v) {
-                if (flagsCurrent > 0) {
-                  v.setBackgroundColor(Color.BLUE);
-                  --flagsCurrent;
-                  mines.setText("" + flagsCurrent + " / " + MINESCONST);
-                  if (cellsValue[finalI][finalJ] == '*') {
-                    cntOfDefused++;
-                  }
-                  if (cntOfDefused == MINESCONST) {
-                    Toast.makeText(getApplicationContext(), "WIN!!11!", Toast.LENGTH_LONG).show();
-                    Runtime.getRuntime().exit(0);
-                  }
-                }
-                return true;
-              }
+            v -> {
+              CellOnLongClick(finalI, finalJ);
+              return true;
             });
         layout.addView(cells[i][j]);
       }
     }
   }
 
+  private void CellOnClick(int finalI, int finalJ) {
+    if (cellsValue[finalI][finalJ] == '*') {
+      Toast.makeText(getApplicationContext(), "LOSE(((", Toast.LENGTH_LONG).show();
+      Runtime.getRuntime().exit(0);
+    }
+    if (cellsValue[finalI][finalJ] != '0') {
+      cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
+    }
+    SetCellColor(finalI, finalJ, true);
+    OpenZeroCells(finalI, finalJ);
+  }
+
+  private void OpenZeroCells(int finalI, int finalJ) {
+    if (cellsValue[finalI][finalJ] == '0') {
+      for (int raw = 0; raw != HEIGHT; raw++) {
+        for (int col = finalJ; col != WIDTH; col++) {
+          if (cellsValue[raw][col] != '0') {
+            break;
+          }
+          SetCellColor(raw, col, true);
+        }
+        for (int col = finalJ; col >= 0; col--) {
+          if (cellsValue[raw][col] != '0') {
+            break;
+          }
+          SetCellColor(raw, col, true);
+        }
+      }
+    }
+  }
+
+  private void CellOnLongClick(int finalI, int finalJ) {
+    if (flagsCurrent > 0 && cells[finalI][finalJ].getText() != "\uD83D\uDEA9") {
+      cells[finalI][finalJ].setText("\uD83D\uDEA9");
+      --flagsCurrent;
+      mines.setText("" + flagsCurrent + " / " + MINESCONST + " \uD83D\uDEA9");
+      if (cellsValue[finalI][finalJ] == '*') {
+        cntOfDefused++;
+      }
+      if (cntOfDefused == MINESCONST) {
+        Toast.makeText(getApplicationContext(), "WIN!!11!", Toast.LENGTH_LONG).show();
+        Runtime.getRuntime().exit(0);
+      }
+    } else if (cells[finalI][finalJ].getText() == "\uD83D\uDEA9") {
+      if (cellsValue[finalI][finalJ] == '*') {
+        cntOfDefused--;
+      }
+      flagsCurrent++;
+      mines.setText("" + flagsCurrent + " / " + MINESCONST + " \uD83D\uDEA9");
+      cells[finalI][finalJ].setText("");
+    }
+  }
+
   private void fillTheCellsWithNumbers(int i, int j) {
     if (cellsValue[i][j] == '*') {
       if (i > 0 && cellsValue[i - 1][j] != '*') {
-        cellsValue[i - 1][j] =
-            (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j]) + 1));
+        cellsValue[i - 1][j] = (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j]) + 1));
       }
       if (j > 0 && cellsValue[i][j - 1] != '*') {
-        cellsValue[i][j - 1] =
-            (char) ('0' + (Character.getNumericValue(cellsValue[i][j - 1]) + 1));
+        cellsValue[i][j - 1] = (char) ('0' + (Character.getNumericValue(cellsValue[i][j - 1]) + 1));
       }
       if (j != WIDTH - 1 && cellsValue[i][j + 1] != '*') {
-        cellsValue[i][j + 1] =
-            (char) ('0' + (Character.getNumericValue(cellsValue[i][j + 1]) + 1));
+        cellsValue[i][j + 1] = (char) ('0' + (Character.getNumericValue(cellsValue[i][j + 1]) + 1));
       }
       if (i != WIDTH - 1 && cellsValue[i + 1][j] != '*') {
-        cellsValue[i + 1][j] =
-            (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
+        cellsValue[i + 1][j] = (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
       }
       //
       if (i > 0 && j > 0 && cellsValue[i - 1][j - 1] != '*') {
@@ -162,6 +162,22 @@ public class MainActivity extends AppCompatActivity {
       if (i != WIDTH - 1 && j != WIDTH - 1 && cellsValue[i + 1][j + 1] != '*') {
         cellsValue[i + 1][j + 1] =
             (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j + 1]) + 1));
+      }
+    }
+  }
+
+  private void SetCellColor(int i, int j, boolean isOpened) {
+    if (!isOpened) {
+      if ((i + j) % 2 == 0) {
+        cells[i][j].setBackgroundColor(0xC860ff38);
+      } else {
+        cells[i][j].setBackgroundColor(0xff3dff0d);
+      }
+    } else {
+      if ((i + j) % 2 == 0) {
+        cells[i][j].setBackgroundColor(0xfffafafa);
+      } else {
+        cells[i][j].setBackgroundColor(0xC8fafafa);
       }
     }
   }
