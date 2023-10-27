@@ -2,6 +2,7 @@ package com.example.sapper;
 
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -9,7 +10,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.core.util.Pair;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
   Random random = new Random();
@@ -64,9 +70,6 @@ public class MainActivity extends AppCompatActivity {
         int finalI = i;
         int finalJ = j;
 
-        // cells[i][j].setText("" + (j + HEIGHT * i + 1));
-        // cells[finalI][finalJ].setText("" + cellsValue[finalI][finalJ]);
-
         cells[i][j].setTag("" + (j + HEIGHT * i));
         cells[i][j].setOnClickListener(v -> CellOnClick(finalI, finalJ));
         cells[i][j].setOnLongClickListener(
@@ -93,22 +96,32 @@ public class MainActivity extends AppCompatActivity {
 
   private void OpenZeroCells(int finalI, int finalJ) {
     if (cellsValue[finalI][finalJ] == '0') {
-      for (int raw = 0; raw != HEIGHT; raw++) {
-        for (int col = finalJ; col != WIDTH; col++) {
-          if (cellsValue[raw][col] != '0') {
-            break;
+      Set<Pair<Integer, Integer>> visitedCells = new HashSet<>();
+      openAdjacentCells(finalI, finalJ, visitedCells);
+    }
+  }
+
+  private void openAdjacentCells(int i, int j, Set<Pair<Integer, Integer>> visitedCells) {
+    for (int x = i - 1; x <= i + 1; x++) {
+      for (int y = j - 1; y <= j + 1; y++) {
+        if (x >= 0 && x < HEIGHT && y >= 0 && y < WIDTH) {
+          Pair<Integer, Integer> cell = new Pair<>(x, y);
+          if (!visitedCells.contains(cell)) {
+            visitedCells.add(cell);
+            if (cellsValue[x][y] == '0') {
+              SetCellColor(x, y, true);
+              openAdjacentCells(x, y, visitedCells);
+            } else {
+              SetCellColor(x, y, true);
+              cells[x][y].setText("" + cellsValue[x][y]);
+            }
           }
-          SetCellColor(raw, col, true);
-        }
-        for (int col = finalJ; col >= 0; col--) {
-          if (cellsValue[raw][col] != '0') {
-            break;
-          }
-          SetCellColor(raw, col, true);
         }
       }
     }
   }
+
+
 
   private void CellOnLongClick(int finalI, int finalJ) {
     if (flagsCurrent > 0 && cells[finalI][finalJ].getText() != "\uD83D\uDEA9") {
