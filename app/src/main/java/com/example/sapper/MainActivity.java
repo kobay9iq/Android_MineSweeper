@@ -182,9 +182,9 @@ public class MainActivity extends AppCompatActivity {
   private void SetCellColor(int i, int j, boolean isOpened) {
     if (!isOpened) {
       if ((i + j) % 2 == 0) {
-        cells[i][j].setBackgroundColor(0xC860ff38);
+        cells[i][j].setBackgroundColor(0xffff7514);
       } else {
-        cells[i][j].setBackgroundColor(0xff3dff0d);
+        cells[i][j].setBackgroundColor(0xffff4d00);
       }
     } else {
       if ((i + j) % 2 == 0) {
