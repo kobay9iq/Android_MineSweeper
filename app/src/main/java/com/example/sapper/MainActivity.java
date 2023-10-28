@@ -1,9 +1,6 @@
 package com.example.sapper;
 
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
@@ -12,8 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.core.util.Pair;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 
@@ -22,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
   Button[][] cells;
   char[][] cellsValue;
   final int MINESCONST = random.nextInt(30 - 5) + 5;
-  int flagsCurrent = MINESCONST;
+  int cntOfFlags = MINESCONST;
   int cntOfDefused = 0;
   TextView mines;
   final int WIDTH = 10;
@@ -33,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     mines = findViewById(R.id.mines);
-    mines.setText("" + flagsCurrent + " / " + MINESCONST + " \uD83D\uDEA9");
+    mines.setText("" + cntOfFlags + " / " + MINESCONST + " \uD83D\uDEA9");
     generate();
   }
 
@@ -57,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     for (int i = 0; i < MINESCONST; i++) {
       cellsValue[random.nextInt(HEIGHT)][random.nextInt(WIDTH)] = '*';
     }
+
     for (int i = 0; i < HEIGHT; i++) {
       for (int j = 0; j < WIDTH; j++) {
         cells[i][j] = (Button) inflater.inflate(R.layout.cell, layout, false);
@@ -121,13 +117,11 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-
-
   private void CellOnLongClick(int finalI, int finalJ) {
-    if (flagsCurrent > 0 && cells[finalI][finalJ].getText() != "\uD83D\uDEA9") {
+    if (cntOfFlags > 0 && cells[finalI][finalJ].getText() != "\uD83D\uDEA9") {
       cells[finalI][finalJ].setText("\uD83D\uDEA9");
-      --flagsCurrent;
-      mines.setText("" + flagsCurrent + " / " + MINESCONST + " \uD83D\uDEA9");
+      --cntOfFlags;
+      mines.setText("" + cntOfFlags + " / " + MINESCONST + " \uD83D\uDEA9");
       if (cellsValue[finalI][finalJ] == '*') {
         cntOfDefused++;
       }
@@ -139,8 +133,8 @@ public class MainActivity extends AppCompatActivity {
       if (cellsValue[finalI][finalJ] == '*') {
         cntOfDefused--;
       }
-      flagsCurrent++;
-      mines.setText("" + flagsCurrent + " / " + MINESCONST + " \uD83D\uDEA9");
+      cntOfFlags++;
+      mines.setText("" + cntOfFlags + " / " + MINESCONST + " \uD83D\uDEA9");
       cells[finalI][finalJ].setText("");
     }
   }
