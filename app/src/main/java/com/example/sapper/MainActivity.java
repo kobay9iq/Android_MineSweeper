@@ -16,8 +16,8 @@ public class MainActivity extends AppCompatActivity {
   Random random = new Random();
   Button[][] cells;
   char[][] cellsValue;
-  final int MINES = random.nextInt(30 - 5) + 5;
-  int cntOfFlags = MINES;
+  final int MINESCONST = random.nextInt(30 - 5) + 5;
+  int cntOfFlags = MINESCONST;
   int cntOfDefused = 0;
   TextView mines;
   final int WIDTH = 10;
@@ -28,11 +28,11 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     mines = findViewById(R.id.mines);
-    mines.setText("" + cntOfFlags + " / " + MINES + " \uD83D\uDEA9");
-    Generate();
+    mines.setText("" + cntOfFlags + " / " + MINESCONST + " \uD83D\uDEA9");
+    generate();
   }
 
-  private void Generate() {
+  private void generate() {
     GridLayout layout = findViewById(R.id.Grid);
     layout.removeAllViews();
     layout.setColumnCount(WIDTH);
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     LayoutInflater inflater =
         (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 
-    for (int i = 0; i < MINES; i++) {
+    for (int i = 0; i < MINESCONST; i++) {
       cellsValue[random.nextInt(HEIGHT)][random.nextInt(WIDTH)] = '*';
     }
 
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
       for (int j = 0; j < WIDTH; j++) {
         cells[i][j] = (Button) inflater.inflate(R.layout.cell, layout, false);
         SetCellColor(i, j, false);
-        FillTheCellsAroundMines(i, j);
+        fillTheCellsWithNumbers(i, j);
       }
     }
 
@@ -93,23 +93,23 @@ public class MainActivity extends AppCompatActivity {
   private void OpenZeroCells(int finalI, int finalJ) {
     if (cellsValue[finalI][finalJ] == '0') {
       Set<Pair<Integer, Integer>> visitedCells = new HashSet<>();
-      OpenAdjacentCells(finalI, finalJ, visitedCells);
+      openAdjacentCells(finalI, finalJ, visitedCells);
     }
   }
 
-  private void OpenAdjacentCells(int i, int j, Set<Pair<Integer, Integer>> visitedCells) {
-    for (int row = i - 1; row <= i + 1; row++) {
-      for (int col = j - 1; col <= j + 1; col++) {
-        if (row >= 0 && row < HEIGHT && col >= 0 && col < WIDTH) {
-          Pair<Integer, Integer> cell = new Pair<>(row, col);
+  private void openAdjacentCells(int i, int j, Set<Pair<Integer, Integer>> visitedCells) {
+    for (int x = i - 1; x <= i + 1; x++) {
+      for (int y = j - 1; y <= j + 1; y++) {
+        if (x >= 0 && x < HEIGHT && y >= 0 && y < WIDTH) {
+          Pair<Integer, Integer> cell = new Pair<>(x, y);
           if (!visitedCells.contains(cell)) {
             visitedCells.add(cell);
-            if (cellsValue[row][col] == '0') {
-              SetCellColor(row, col, true);
-              OpenAdjacentCells(row, col, visitedCells);
+            if (cellsValue[x][y] == '0') {
+              SetCellColor(x, y, true);
+              openAdjacentCells(x, y, visitedCells);
             } else {
-              SetCellColor(row, col, true);
-              cells[row][col].setText("" + cellsValue[row][col]);
+              SetCellColor(x, y, true);
+              cells[x][y].setText("" + cellsValue[x][y]);
             }
           }
         }
@@ -118,14 +118,14 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void CellOnLongClick(int finalI, int finalJ) {
-    if (cntOfFlags > 0 && cells[finalI][finalJ].getText().length() == 0) {
+    if (cntOfFlags > 0 && cells[finalI][finalJ].getText() != "\uD83D\uDEA9") {
       cells[finalI][finalJ].setText("\uD83D\uDEA9");
       --cntOfFlags;
-      mines.setText("" + cntOfFlags + " / " + MINES + " \uD83D\uDEA9");
+      mines.setText("" + cntOfFlags + " / " + MINESCONST + " \uD83D\uDEA9");
       if (cellsValue[finalI][finalJ] == '*') {
         cntOfDefused++;
       }
-      if (cntOfDefused == MINES) {
+      if (cntOfDefused == MINESCONST) {
         Toast.makeText(getApplicationContext(), "WIN!!11!", Toast.LENGTH_LONG).show();
         Runtime.getRuntime().exit(0);
       }
@@ -134,20 +134,41 @@ public class MainActivity extends AppCompatActivity {
         cntOfDefused--;
       }
       cntOfFlags++;
-      mines.setText("" + cntOfFlags + " / " + MINES + " \uD83D\uDEA9");
+      mines.setText("" + cntOfFlags + " / " + MINESCONST + " \uD83D\uDEA9");
       cells[finalI][finalJ].setText("");
     }
   }
 
-  private void FillTheCellsAroundMines(int i, int j) {
+  private void fillTheCellsWithNumbers(int i, int j) {
     if (cellsValue[i][j] == '*') {
-      for (int row = i - 1; row <= i + 1; row++) {
-        for (int col = j - 1; col <= j + 1; col++) {
-          if (row >= 0 && row < HEIGHT && col >= 0 && col < WIDTH && cellsValue[row][col] != '*') {
-            cellsValue[row][col] =
-                (char) ('0' + (Character.getNumericValue(cellsValue[row][col]) + 1));
-          }
-        }
+      if (i > 0 && cellsValue[i - 1][j] != '*') {
+        cellsValue[i - 1][j] = (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j]) + 1));
+      }
+      if (j > 0 && cellsValue[i][j - 1] != '*') {
+        cellsValue[i][j - 1] = (char) ('0' + (Character.getNumericValue(cellsValue[i][j - 1]) + 1));
+      }
+      if (j != WIDTH - 1 && cellsValue[i][j + 1] != '*') {
+        cellsValue[i][j + 1] = (char) ('0' + (Character.getNumericValue(cellsValue[i][j + 1]) + 1));
+      }
+      if (i != WIDTH - 1 && cellsValue[i + 1][j] != '*') {
+        cellsValue[i + 1][j] = (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j]) + 1));
+      }
+      //
+      if (i > 0 && j > 0 && cellsValue[i - 1][j - 1] != '*') {
+        cellsValue[i - 1][j - 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j - 1]) + 1));
+      }
+      if (i != WIDTH - 1 && j > 0 && cellsValue[i + 1][j - 1] != '*') {
+        cellsValue[i + 1][j - 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j - 1]) + 1));
+      }
+      if (i > 0 && j != WIDTH - 1 && cellsValue[i - 1][j + 1] != '*') {
+        cellsValue[i - 1][j + 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i - 1][j + 1]) + 1));
+      }
+      if (i != WIDTH - 1 && j != WIDTH - 1 && cellsValue[i + 1][j + 1] != '*') {
+        cellsValue[i + 1][j + 1] =
+            (char) ('0' + (Character.getNumericValue(cellsValue[i + 1][j + 1]) + 1));
       }
     }
   }
